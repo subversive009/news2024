@@ -42,20 +42,24 @@
             <button class="summary-button" @click="generateSummary(news.newsid)">总结文章</button>
             </div>
             <div class="dialog" :style="{display: showDialog ? 'block' : 'none'}">
+              <button  class="dialog-button" @click="showDialog = false">x</button>
               <div class="dialog-content">
                 <div class="bubble">
                   {{summary.substring(0, summaryLength)}}
                 </div>
-                <button  class="dialog-button" @click="showDialog = false">x</button>  <!-- 将关闭按钮的文本改为 "x" -->
+                <div class="bubble" v-for="message in messages.slice(2)" :key="message.content" :class="{right: message.role === 'user'}" :style="{backgroundColor: message.color}">
+                  {{message.content.substring(0, message.displayLength)}}
+                </div>
+              </div>
+              <div class="dialog-input">
                 <van-field
-                  class="dialog-input"
                   v-model="dialogInput"
                   clearable
                   placeholder="请输入文字"
-                  @keyup.enter="sendDialogInput"
+                  @keyup.enter="sendMessage"
                 >
                   <template #button>
-                    <van-button size="small" type="warning" @click="sendDialogInput">发送</van-button>
+                    <van-button size="small" type="warning" @click="sendMessage">发送</van-button>
                   </template>
                 </van-field>
               </div>
@@ -115,6 +119,12 @@ export default {
         summary: '',
         showDialog: false,
         summaryLength: 0,  // 新增一个变量来存储当前显示的总结的长度
+        messages: [
+          {
+            role: 'system',
+            content: '你是一个文档处理能手',
+          },
+        ],
         dialogInput: '',
     }
   },
@@ -130,6 +140,10 @@ export default {
         this.showDialog = true;
         this.axios.post('news/generateWithGPT3?newsId='+this.newsId, {
         }).then(response=>{
+          this.messages.push({
+            role: 'assistant',
+            content: response.data,
+          });
           this.summary = response.data;
           this.summaryLength = 0;  // 重置当前显示的总结的长度
           const intervalId = setInterval(() => {
@@ -140,10 +154,37 @@ export default {
           }, 100);  // 这里的 100 是每隔 100 毫秒增加显示的总结的长度，你可以根据需要调整这个值
         })
       },
-      sendDialogInput() {
-      console.log(this.dialogInput);  // 打印对话框输入框的内容
-      this.dialogInput = '';  // 清空对话框输入框的内容
-      },
+    sendMessage() {
+      // 将用户的消息添加到messages数组中
+      this.messages.push({
+        role: 'user',
+        content: this.dialogInput,
+        side: 'right',
+        color: 'green',
+        displayLength: this.dialogInput.length,
+      });
+
+      // 调用TalkToGPT方法
+      this.axios.post('news/TalkToGPT', this.messages).then(response => {
+        // 将AI助手的回复添加到messages数组中
+        this.messages.push({
+          role: 'assistant',
+          content: response.data,
+          side: 'left',
+          color: '#f0f0f0',
+          displayLength: 0,
+        });
+        const currentMessage = this.messages[this.messages.length - 1];
+        const intervalId = setInterval(() => {
+          currentMessage.displayLength += 1;  // 每隔一定的时间就增加显示的回答的长度
+          if (currentMessage.displayLength >= currentMessage.content.length) {
+            clearInterval(intervalId);  // 当显示的回答的长度达到回答的长度时，停止定时器
+          }
+        }, 100);  // 这里的100是每隔100毫秒增加显示的回答的长度，你可以根据需要调整这个值
+      });
+      // 清空输入框
+      this.dialogInput = '';
+    },
       goAuthorInfo(){
           this.$router.push({
               name:'AuthorInfo',
@@ -296,7 +337,6 @@ export default {
 .summary-button-container {
   position: sticky;
   top: 0;
-  z-index: 1000;
 }
 .summary-button {
   background-color: #ee0a24; /* 按钮背景颜色 */
@@ -326,33 +366,39 @@ export default {
 
 .dialog-content {
   position: relative;
-  padding-bottom: 50px;
-  background-color: #fefefe;
-  margin: 15% auto; /* 15% 从顶部和居中 */
+  padding-bottom: 70px; /* 增加底部填充以适应输入框，值大于或等于.dialog-input的高度 */
+  background-color: #f7f8fa;
+  margin: 15% auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 80%; /* 对话框宽度 */
+  width: 80%;
+  height: 60vh;
+  overflow: auto;
 }
+
 .bubble {
   background-color: #f0f0f0;
   border-radius: 5px;
   padding: 10px;
   margin-bottom: 10px;
+  max-width: 80%; /* 设置最大宽度为80%，你可以根据需要调整这个值 */
+  display: inline-block; /* 使元素的宽度根据其内容自动调整 */
+  clear: both;
 }
 
 .dialog-input {
   position: absolute;
-  bottom: -50px;  /* 将输入框放在 .dialog-content 的底部之下 */
+  bottom: 200px;  /* 将输入框放在 .dialog-content 的底部 */
   height: 50px;
-  left: 0;
-  width: 100%;
-  background-color: #fff;
+  left: 19px;
+  width: 352px;
+  border-top: 0.5px solid #ddd;
 }
 
 .dialog-button {
   position: absolute;
-  top: 5px;  /* 将关闭按钮放在 .dialog-content 的右上角 */
-  right: 5px;
+  top: 60px;  /* 将关闭按钮放在 .dialog-content 的右上角 */
+  right: 20px;
   background-color: #f44336;  /* 设置背景颜色为红色 */
   color: white;  /* 设置文字颜色为白色 */
   border: none;  /* 移除边框 */
@@ -363,5 +409,12 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1;
 }
+
+.bubble.right {
+  float: right; /* 添加这一行 */
+  clear: both; /* 添加这一行 */
+}
+
 </style>

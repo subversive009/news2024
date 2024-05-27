@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import cn.edu.hbpu.news2022.util.GPT3Util;
 import org.apache.commons.io.FileUtils;
@@ -70,6 +71,31 @@ public class NewsController {
 		}
 
 		// 6. 返回生成的内容
+		return generatedContent;
+	}
+
+	@PostMapping("/TalkToGPT")
+	public String TalkToGPT(@RequestBody List<Map<String, String>> messages) {
+		// 1. 创建一个新的JSONObject
+		JSONObject jsonObject = new JSONObject();
+
+		// 2. 将messages添加到JSONObject
+		jsonObject.put("messages", messages);
+
+		// 3. 将JSONObject转换为字符串
+		String jsonContent = jsonObject.toString();
+
+		System.out.println(jsonContent);
+
+		// 4. 使用GPT3Util.sendPost方法生成内容
+		String generatedContent = "";
+		try {
+			generatedContent = GPT3Util.sendPost(jsonContent);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		// 5. 返回生成的内容
 		return generatedContent;
 	}
 
