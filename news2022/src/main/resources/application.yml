@@ -1,0 +1,57 @@
+web:
+  uploadPath: ./uploadFile
+# DataSource Config
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #开启sql日志
+rocketmq:
+  name-server: 127.0.0.1:9876
+  producer:
+    group: news-group
+    send-message-timeout: 3000
+spring:
+  mail: 
+    host: smtp.qq.com
+    username: 943515601@qq.com
+    #QQ邮箱的授权码
+    password: cquryxyghctjbbjf
+    protocol: smtp
+    default-encoding: UTF-8
+    
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/newsdbmongo
+  redis: 
+    host : 127.0.0.1  
+    port : 6379  
+    password: 
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 500
+        min-idle: 0
+    lettuce:
+      shutdown-timeout: 0ms
+  servlet:
+    multipart:
+      max-file-size:
+        10MB
+      max-request-size:
+        20MB
+  mvc:
+    static-path-pattern: /pic/**
+  web:
+    resources:
+      static-locations: file:${web.uploadPath}
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/newsdb
+    username: root
+    password: 123456
+    druid:
+      initial-size: 5 
+      min-idle: 5
+      max-active: 20
+      max-wait: 6000
