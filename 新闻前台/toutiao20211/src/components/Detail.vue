@@ -42,8 +42,8 @@
             <button class="summary-button" @click="generateSummary(news.newsid)">总结文章</button>
             </div>
             <div class="dialog" :style="{display: showDialog ? 'block' : 'none'}">
-              <button  class="dialog-button" @click="showDialog = false">x</button>
               <div class="dialog-content">
+                <button  class="dialog-button" @click="showDialog = false">x</button>
                 <div class="bubble">
                   {{summary.substring(0, summaryLength)}}
                 </div>
@@ -368,10 +368,9 @@ export default {
   position: relative;
   padding-bottom: 70px; /* 增加底部填充以适应输入框，值大于或等于.dialog-input的高度 */
   background-color: #f7f8fa;
-  margin: 15% auto;
+  margin: 15% auto 0 auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 80%;
   height: 60vh;
   overflow: auto;
 }
@@ -387,18 +386,17 @@ export default {
 }
 
 .dialog-input {
-  position: absolute;
-  bottom: 200px;  /* 将输入框放在 .dialog-content 的底部 */
+  position: sticky;
+  bottom: 0;  /* 将输入框放在 .dialog-content 的底部 */
   height: 50px;
-  left: 19px;
-  width: 352px;
+  width: 100%;
   border-top: 0.5px solid #ddd;
 }
 
 .dialog-button {
   position: absolute;
-  top: 60px;  /* 将关闭按钮放在 .dialog-content 的右上角 */
-  right: 20px;
+  top: 0;  /* 将关闭按钮放在 .dialog-content 的右上角 */
+  right: 0;
   background-color: #f44336;  /* 设置背景颜色为红色 */
   color: white;  /* 设置文字颜色为白色 */
   border: none;  /* 移除边框 */
