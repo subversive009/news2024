@@ -99,11 +99,6 @@ public class NewsController {
 		return generatedContent;
 	}
 
-	@GetMapping("/test")
-	public String test(){
-		return GPT3Util.sendPost("你好");
-	}
-
 	@GetMapping("/getSwipeNews")
 	public IPage<News> getSwipe(){
 		Page <News> page=new Page<>(1,5);
