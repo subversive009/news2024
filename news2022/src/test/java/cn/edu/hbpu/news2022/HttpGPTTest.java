@@ -18,14 +18,21 @@ public class HttpGPTTest {
         httpHeaders.add("Authorization", "Bearer " + "sk-DVtX85h0amfb3SFF3TfMdZ0hwSl8jRrLUmCUp5WiRoZ9AhXG");
         httpHeaders.add("Content-Type", "application/json");
 
-        String requestJson = String.format(
-                "{\n" +
-                        "\"model\": \"gpt-3.5-turbo\",\n" +
-                        "\"temperature\": 0,\n" +
-                        "\"max_tokens\": 2048,\n" +
-                        "\"messages\": [{\"role\": \"user\", \"content\": \"%s\"}]\n" +
-                        "}", data
-        );
+        // ...
+        JSONObject message = new JSONObject();
+        message.put("role", "user");
+        message.put("content", data);
+
+        JSONArray messages = new JSONArray();
+        messages.put(message);
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("model", "gpt-3.5-turbo");
+        requestBody.put("temperature", 0);
+        requestBody.put("max_tokens", 2048);
+        requestBody.put("messages", messages);
+
+        String requestJson = requestBody.toString();
         HttpEntity<String> entity = new HttpEntity<>(requestJson, httpHeaders);
         ResponseEntity<String> response = restTemplate.postForEntity("https://api.chatanywhere.tech/v1/chat/completions", entity, String.class);
         System.out.println(response.getBody());
